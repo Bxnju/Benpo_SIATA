@@ -1,0 +1,9 @@
+Flask
+Flask-CORS
+psycopg2-binary
+requests
+APScheduler
+python-dotenv
+scipy
+numpy
+python-dateutil

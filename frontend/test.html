@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIATA Test</title>
+    <link rel="stylesheet" href="css/style_new.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🌦️ SIATA Dashboard</h1>
+            <p class="subtitle">Sistema de Alerta Temprana del Valle de Aburrá</p>
+        </div>
+        <nav>
+            <button onclick="showTab('forecasts')" class="tab-btn active" data-tab="forecasts">
+                <i class="fas fa-cloud-rain"></i> Pronósticos
+            </button>
+            <button onclick="showTab('map')" class="tab-btn" data-tab="map">
+                <i class="fas fa-map"></i> Mapa Estaciones
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <div id="forecasts-tab" class="tab-content active">
+            <div class="tab-header">
+                <h2>Pronósticos de Lluvia por Zonas</h2>
+                <button onclick="forecastsManager.loadForecasts()" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+            </div>
+            <div id="forecasts-container">
+                <p>Cargando pronósticos...</p>
+            </div>
+        </div>
+
+        <div id="map-tab" class="tab-content">
+            <div class="tab-header">
+                <h2>Mapa de Estaciones SIATA</h2>
+                <button onclick="mapManager.refreshData()" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+            </div>
+            <div class="map-wrapper">
+                <div id="map"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts en orden específico -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <!-- Verificar carga de scripts -->
+    <script>
+        console.log('🔧 Iniciando carga de scripts...');
+        console.log('✅ Leaflet cargado:', typeof L !== 'undefined');
+        console.log('✅ Leaflet Heat cargado:', typeof L.heatLayer !== 'undefined');
+    </script>
+
+    <script src="api.js"></script>
+    <script>console.log('✅ API Client cargado:', typeof apiClient !== 'undefined');</script>
+
+    <script src="forecasts.js"></script>
+    <script>console.log('✅ Forecasts Manager cargado:', typeof forecastsManager !== 'undefined');</script>
+
+    <script src="map.js"></script>
+    <script>console.log('✅ Map Manager cargado:', typeof mapManager !== 'undefined');</script>
+
+    <script src="app.js"></script>
+    <script>console.log('✅ App cargado:', typeof showTab !== 'undefined');</script>
+
+    <script>
+        // Test inicial
+        console.log('🚀 Iniciando pruebas...');
+
+        // Verificar que todas las funciones existen
+        const checks = [
+            { name: 'showTab', exists: typeof showTab !== 'undefined' },
+            { name: 'apiClient', exists: typeof apiClient !== 'undefined' },
+            { name: 'forecastsManager', exists: typeof forecastsManager !== 'undefined' },
+            { name: 'mapManager', exists: typeof mapManager !== 'undefined' },
+            { name: 'L.heatLayer', exists: typeof L !== 'undefined' && typeof L.heatLayer !== 'undefined' }
+        ];
+
+        checks.forEach(check => {
+            console.log(`${check.exists ? '✅' : '❌'} ${check.name}: ${check.exists ? 'OK' : 'FALTA'}`);
+        });
+
+        console.log('🏁 Pruebas completadas');
+    </script>
+</body>
+
+</html>

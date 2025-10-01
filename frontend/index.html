@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png"
+        href="https://images.vexels.com/media/users/3/231524/isolated/preview/6c4ac284d0135d9e391c4f6225378c71-planeta-azul-neptuno-plano.png">
+    <title>SIATA Dashboard - Benpo</title>
+    <link rel="stylesheet" href="css/style_new.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="preload">
+    <div id="global-loader" class="global-loader" aria-live="polite" aria-busy="true">
+        <div class="loader-core">
+            <div class="loader-ring">
+                <div class="seg"></div>
+                <div class="seg"></div>
+                <div class="seg"></div>
+                <div class="seg"></div>
+            </div>
+            <div class="loader-logo">🌦️</div>
+            <h2>Cargando datos del SIATA…</h2>
+            <p id="loader-step">Inicializando...</p>
+            <div class="loader-progress">
+                <div id="loader-bar" class="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <header class="single-header" style="opacity:0;">
+        <h1>🌦️ Benpo SIATA Dashboard</h1>
+        <p class="subtitle">Sistema de Alerta Temprana del Valle de Aburrá por Benju</p>
+    </header>
+
+    <main class="single-layout" style="opacity:0;">
+        <section class="map-section" aria-label="Mapa de estaciones SIATA">
+            <div class="section-header">
+                <div class="actions-inline" style="margin-bottom: 1em;">
+                    <button onclick="if(mapManager){mapManager.refreshData()}" class="refresh-btn small">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+            <div class="map-wrapper unified">
+                <div id="map"></div>
+            </div>
+        </section>
+
+        <section class="forecast-section" aria-label="Pronósticos por zonas">
+            <div class="section-header">
+                <div class="actions-inline">
+                    <button onclick="if(forecastsManager){forecastsManager.loadForecasts()}" class="refresh-btn small">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+            <div id="forecasts-container" class="forecasts-unified"></div>
+        </section>
+    </main>
+
+    <footer class="app-footer" style="opacity:0;">
+        <p>Datos en vivo desde SIATA • Actualización automática cada 30 segundos</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="api.js"></script>
+    <script src="forecasts.js"></script>
+    <script src="map.js"></script>
+    <script src="heatmap.js"></script>
+    <script src="app.js"></script>
+    <script>
+        async function orchestrateInitialLoad() {
+            const stepEl = document.getElementById('loader-step');
+            const barEl = document.getElementById('loader-bar');
+            const setStep = (t, p) => { if (stepEl) stepEl.textContent = t; if (barEl) barEl.style.width = p + '%'; };
+
+            try {
+                setStep('Verificando servicio...', 5);
+                await apiClient.healthCheck();
+
+                setStep('Cargando listado de estaciones...', 20);
+                const stationsList = await apiClient.getStations();
+
+                setStep('Cargando datos de estaciones...', 55);
+                if (typeof mapManager !== 'undefined') {
+                    if (!mapManager.map) { await new Promise(r => setTimeout(r, 50)); mapManager.initMap(); }
+                    await mapManager.loadStationsData(true); // modo silencioso
+                }
+
+                setStep('Cargando pronósticos zonales...', 75);
+                if (typeof forecastsManager !== 'undefined') {
+                    await forecastsManager.loadForecasts(true); // modo silencioso
+                }
+
+                setStep('Renderizando interfaz...', 90);
+                await new Promise(r => setTimeout(r, 120));
+
+                setStep('Completo', 100);
+                hideGlobalLoader();
+            } catch (e) {
+                console.error('Fallo carga inicial', e);
+                setStep('Error cargando datos. Reintentando...', 15);
+                setTimeout(orchestrateInitialLoad, 3000);
+            }
+        }
+
+        function hideGlobalLoader() {
+            const loader = document.getElementById('global-loader');
+            if (!loader) return;
+            loader.classList.add('fade-out');
+            setTimeout(() => loader.remove(), 600);
+            document.querySelectorAll('header, main, footer').forEach(el => {
+                el.style.opacity = 1;
+                el.classList.add('fade-in');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', orchestrateInitialLoad);
+    </script>
+</body>
+
+</html>
